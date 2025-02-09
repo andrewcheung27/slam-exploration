@@ -20,4 +20,19 @@ public class PoseNode
     {
         return index.GetHashCode();
     }
+
+    public override string ToString()
+    {
+        return $"PoseNode(index={index}, pose={pose})";
+    }
+
+    public int GetIndex()
+    {
+        return index;
+    }
+
+    public Pose GetPose()
+    {
+        return pose;
+    }
 }

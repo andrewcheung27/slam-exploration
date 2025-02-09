@@ -1,33 +1,32 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    RaycastHit hit;
-    Rigidbody rb;
-    LineRenderer lineRenderer;
-    InputAction moveAction;
-    InputAction interactAction;
-    SensorController sensorController;
-    GameObject voxelRenderer;
-    float timeSinceSensorActivated = 0f;
-    public ParticleSystem system;
+    private Rigidbody rb;
+    private InputAction moveAction;
+    private InputAction interactAction;
+    private SensorController sensorController;
+    private float timeSinceSensorActivated = 0f;
+    private int nodeIndex = 0;  // incrementing id for PoseNodes
+    private PoseGraph poseGraph;
+
+    public bool debug = false;
     public GameObject sensor;
-    public GameObject pointPrefab;
     public float moveSpeed = 10f;
     public float sensorCooldown = 1.0f;  // in seconds
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
-        // voxelRenderer = system.GetComponent<VoxelRenderer>();
-        lineRenderer = GetComponent<LineRenderer>();
-        lineRenderer.startColor = Color.blue;
-        lineRenderer.endColor = Color.blue;
-        sensorController = sensor.GetComponent<SensorController>();
 
         moveAction = InputSystem.actions.FindAction("Move");
         interactAction = InputSystem.actions.FindAction("Interact");
+
+        sensorController = sensor.GetComponent<SensorController>();
+
+        poseGraph = new PoseGraph(debug);
     }
 
     void Start()
@@ -58,61 +57,20 @@ public class PlayerController : MonoBehaviour
         );
     }
 
-    // void ActivateSensor(InputAction.CallbackContext ctx)
-    // {
-    //     if (timeSinceSensorActivated > sensorCooldown) {
-    //         Debug.Log("INTERACT ACTION TRIGGERED");
-    //         sensorController.Activate();
-    //         timeSinceSensorActivated = 0f;
-    //     }
-    // }
-
-    // void ActivateSensor()
-    // {
-    //     if (interactAction.WasPressedThisFrame()) {
-    //         Debug.Log("INTERACT ACTION TRIGGERED");
-
-
-    //         float maxDistance = 100f;
-    //         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, maxDistance)) {
-    //             // Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * hit.distance, Color.red);
-    //             lineRenderer.SetPosition(0, transform.position);
-    //             lineRenderer.SetPosition(1, hit.collider.gameObject.transform.position);
-    //             Debug.Log("HIT");
-    //         }
-
-    //         // sensorController.Activate();
-    //         timeSinceSensorActivated = 0f;
-    //     }
-    // }
-
-    // void ActivateSensor()
-    // {
-    //     if (interactAction.WasPressedThisFrame()) {
-    //         float maxDistance = 100f;
-    //         if (Physics.Raycast(sensor.transform.position, transform.TransformDirection(Vector3.forward), out hit, maxDistance)) {
-    //             if (!hit.collider.gameObject.CompareTag("Point")) {  // don't observe previous observations
-    //                 GameObject newPoint = Instantiate(pointPrefab, hit.point, Quaternion.identity);
-    //                 newPoint.GetComponent<MeshRenderer>().material = hit.collider.gameObject.GetComponent<MeshRenderer>().material;
-    //                 Debug.Log("HIT: " + hit.collider.gameObject);
-    //             }
-    //         }
-    //         timeSinceSensorActivated = 0f;
-    //     }
-    // }
-
-
     void ActivateSensor()
     {
         if (interactAction.WasPressedThisFrame()) {
-            float maxDistance = 100f;
-            if (Physics.Raycast(sensor.transform.position, transform.TransformDirection(Vector3.forward), out hit, maxDistance)) {
-                if (!hit.collider.gameObject.CompareTag("Point")) {  // don't observe previous observations
-                    GameObject newPoint = Instantiate(pointPrefab, hit.point, Quaternion.identity);
-                    newPoint.GetComponent<MeshRenderer>().material = hit.collider.gameObject.GetComponent<MeshRenderer>().material;
-                    Debug.Log("HIT: " + hit.collider.gameObject);
-                }
-            }
+            sensorController.Activate();
+
+            // add node to pose graph
+            Pose pose = new Pose(transform.position, transform.eulerAngles);
+            int timePlaceholder = 69;  // TODO: time might not be necessary for PoseNodes
+            List<Point> pointCloud = null;  // TODO: get point cloud from sensor
+            PoseNode poseNode = new PoseNode(nodeIndex, pose, timePlaceholder, pointCloud);
+            poseGraph.AddNode(poseNode);
+
+            // bookkeeping
+            nodeIndex++;
             timeSinceSensorActivated = 0f;
         }
     }
