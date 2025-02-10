@@ -11,11 +11,12 @@ public class PlayerController : MonoBehaviour
     private float timeSinceSensorActivated = 0f;
     private int nodeIndex = 0;  // incrementing id for PoseNodes
     private PoseGraph poseGraph;
+    private PoseGraph poseGraphGroundTruth;
 
-    public bool debug = false;
     public GameObject sensor;
     public float moveSpeed = 10f;
-    public float sensorCooldown = 1.0f;  // in seconds
+    public float sensorCooldown = 1f;  // in seconds
+    public float sensorError = 1f;
 
     void Awake()
     {
@@ -26,12 +27,8 @@ public class PlayerController : MonoBehaviour
 
         sensorController = sensor.GetComponent<SensorController>();
 
-        poseGraph = new PoseGraph(debug);
-    }
-
-    void Start()
-    {
-        
+        poseGraph = GameManager.instance.GetPoseGraph();
+        poseGraphGroundTruth = GameManager.instance.GetPoseGraphGroundTruth();
     }
 
     void Update()
@@ -57,17 +54,37 @@ public class PlayerController : MonoBehaviour
         );
     }
 
+    Vector3 GetRandomError()
+    {
+        return new Vector3(
+            Random.Range(-1 * sensorError, sensorError), 
+            Random.Range(0, sensorError),  // don't allow negative Y because ground level is at 0
+            Random.Range(-1 * sensorError, sensorError));
+    }
+
+    PoseNode CreatePoseNode(List<Point> pointCloud, bool simulateError=true)
+    {
+        Vector3 position = transform.position;
+        if (simulateError) position += GetRandomError();
+        // TODO: simulate error for rotation?
+        Vector3 rotation = transform.eulerAngles;
+
+        Pose pose = new Pose(position, rotation);
+        int timePlaceholder = 69;  // TODO: time might not be necessary for PoseNodes
+        return new PoseNode(nodeIndex, pose, timePlaceholder, pointCloud);
+    }
+
     void ActivateSensor()
     {
         if (interactAction.WasPressedThisFrame()) {
             sensorController.Activate();
-
-            // add node to pose graph
-            Pose pose = new Pose(transform.position, transform.eulerAngles);
-            int timePlaceholder = 69;  // TODO: time might not be necessary for PoseNodes
             List<Point> pointCloud = null;  // TODO: get point cloud from sensor
-            PoseNode poseNode = new PoseNode(nodeIndex, pose, timePlaceholder, pointCloud);
-            poseGraph.AddNode(poseNode);
+
+            // add node to pose graph, with some error
+            poseGraph.AddNode(CreatePoseNode(pointCloud, simulateError: true));
+
+            // add node to ground truth, with no point cloud and no error
+            poseGraphGroundTruth.AddNode(CreatePoseNode(null, simulateError: false));
 
             // bookkeeping
             nodeIndex++;
