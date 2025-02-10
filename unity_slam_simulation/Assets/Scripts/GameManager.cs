@@ -6,7 +6,9 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     private PoseGraph poseGraph;
+    private PoseGraph poseGraphGroundTruth;
     private List<GameObject> poseNodesDisplayed;
+    private List<GameObject> poseNodesGroundTruthDisplayed;
     private bool gameRunning = false;  // whether the game is running now
     private TextMeshProUGUI restartStopButtonText;
 
@@ -15,7 +17,8 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI startText;
     public Button startButton;
     public Button restartStopButton;
-    public GameObject poseNodePrefab;  // for displaying nodes on the pose graph
+    public GameObject poseNodePrefab;  // to display nodes on the pose graph
+    public GameObject poseNodeGroundTruthPrefab;  // to display ground truth for the nodes
 
     void Awake()
     {
@@ -27,8 +30,10 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        poseGraph = new PoseGraph(debug);
+        poseGraph = new PoseGraph(_debug: debug);
+        poseGraphGroundTruth = new PoseGraph(_trackConstraints: false, _debug: false);
         poseNodesDisplayed = new List<GameObject>();
+        poseNodesGroundTruthDisplayed = new List<GameObject>();
 
         Time.timeScale = 0;  // don't start game until user clicks start button
 
@@ -37,21 +42,14 @@ public class GameManager : MonoBehaviour
         restartStopButtonText = restartStopButton.GetComponentInChildren<TextMeshProUGUI>();
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public PoseGraph GetPoseGraph()
     {
         return poseGraph;
+    }
+
+    public PoseGraph GetPoseGraphGroundTruth()
+    {
+        return poseGraphGroundTruth;
     }
 
     void HandleStart()
@@ -78,23 +76,41 @@ public class GameManager : MonoBehaviour
             Time.timeScale = 1;
             // update button text
             restartStopButtonText.text = "Stop Simulation";
+
             // delete the pose nodes from the previous run
             foreach (GameObject obj in poseNodesDisplayed) {
                 Destroy(obj);
             }
             poseNodesDisplayed.Clear();
+            // also delete pose nodes for ground truth from the previous run
+            foreach (GameObject obj in poseNodesGroundTruthDisplayed) {
+                Destroy(obj);
+            }
+            poseNodesGroundTruthDisplayed.Clear();
         }
 
         gameRunning = !gameRunning;
     }
 
+    void DisplayPoseNodes(List<PoseNode> nodes, GameObject nodePrefab, List<GameObject> displayedNodes)
+    {
+        foreach (PoseNode node in nodes) {
+            GameObject n = Instantiate(nodePrefab, node.GetPose().position, Quaternion.identity);
+            displayedNodes.Add(n);
+        }
+    }
+
     void EvaluateSLAM()
     {
         // display nodes in the pose graph (trajectory estimated by SLAM)
-        List<PoseNode> nodes = poseGraph.GetNodes();
-        foreach (PoseNode node in nodes) {
-            GameObject n = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
-            poseNodesDisplayed.Add(n);
-        }
+        // List<PoseNode> nodes = poseGraph.GetNodes();
+        // foreach (PoseNode node in nodes) {
+        //     GameObject n = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
+        //     poseNodesDisplayed.Add(n);
+        // }
+        DisplayPoseNodes(poseGraph.GetNodes(), poseNodePrefab, poseNodesDisplayed);
+
+        // display ground truth for the nodes
+        DisplayPoseNodes(poseGraphGroundTruth.GetNodes(), poseNodeGroundTruthPrefab, poseNodesGroundTruthDisplayed);
     }
 }

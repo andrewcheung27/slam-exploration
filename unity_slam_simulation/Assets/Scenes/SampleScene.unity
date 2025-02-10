@@ -6585,6 +6585,7 @@ MonoBehaviour:
   startButton: {fileID: 288540160}
   restartStopButton: {fileID: 2003448174}
   poseNodePrefab: {fileID: 8115437029381018009, guid: 3da4d0ce0c1034a7b9876e86a9a9ac0c, type: 3}
+  poseNodeGroundTruthPrefab: {fileID: 8115437029381018009, guid: 6395587374b3d444584173954790101e, type: 3}
 --- !u!1 &2003448172
 GameObject:
   m_ObjectHideFlags: 0

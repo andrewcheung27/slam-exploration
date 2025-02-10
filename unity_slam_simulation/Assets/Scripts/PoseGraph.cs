@@ -5,13 +5,15 @@ using System.Linq;
 
 public class PoseGraph
 {
+    private bool trackConstraints;  // whether to track constraints (edges). if false, this class basically just stores a list of nodes.
     private bool debug;
     private List<PoseNode> nodes;
     // maps pair of PoseNodes to a Pose, representing a spatial constraint between the nodes
     private Dictionary<Tuple<PoseNode, PoseNode>, Pose> constraints;
 
-    public PoseGraph(bool _debug=false)
+    public PoseGraph(bool _trackConstraints=true, bool _debug=false)
     {
+        trackConstraints = _trackConstraints;
         debug = _debug;
 
         nodes = new List<PoseNode>();

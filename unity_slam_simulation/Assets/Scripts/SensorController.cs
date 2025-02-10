@@ -8,16 +8,6 @@ public class SensorController : MonoBehaviour
     public GameObject pointPrefab;
     public float sensorRange = 100f;
 
-    void Start()
-    {
-        
-    }
-
-    void Update()
-    {
-        
-    }
-
     public void Activate()
     {
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, sensorRange)) {
