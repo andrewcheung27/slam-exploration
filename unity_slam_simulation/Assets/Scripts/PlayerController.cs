@@ -12,7 +12,6 @@ public class PlayerController : MonoBehaviour
     private int nodeIndex = 0;  // incrementing id for PoseNodes
     private PoseGraph poseGraph;
 
-    public bool debug = false;
     public GameObject sensor;
     public float moveSpeed = 10f;
     public float sensorCooldown = 1.0f;  // in seconds
@@ -26,12 +25,7 @@ public class PlayerController : MonoBehaviour
 
         sensorController = sensor.GetComponent<SensorController>();
 
-        poseGraph = new PoseGraph(debug);
-    }
-
-    void Start()
-    {
-        
+        poseGraph = GameManager.instance.GetPoseGraph();
     }
 
     void Update()
@@ -55,6 +49,11 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity.y,  // keep velocity on y axis
             moveInput.y * moveSpeed * Time.fixedDeltaTime  // moveInput.y corresponds to z axis in 3D
         );
+    }
+
+    public PoseGraph GetPoseGraph()
+    {
+        return poseGraph;
     }
 
     void ActivateSensor()
