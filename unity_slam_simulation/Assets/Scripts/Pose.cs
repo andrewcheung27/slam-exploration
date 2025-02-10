@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class Pose
 {
-    private Vector3 position;
-    private Vector3 rotation;
+    public Vector3 position;
+    public Vector3 rotation;
 
     public static Pose PoseDifference(Pose pose1, Pose pose2)
     {

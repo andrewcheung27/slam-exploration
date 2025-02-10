@@ -18,6 +18,11 @@ public class PoseGraph
         constraints = new Dictionary<Tuple<PoseNode, PoseNode>, Pose>();
     }
 
+    public List<PoseNode> GetNodes()
+    {
+        return nodes;
+    }
+
     public void AddNode(PoseNode node)
     {
         PoseNode lastNode = null;
