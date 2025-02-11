@@ -26,7 +26,11 @@ public class PlayerController : MonoBehaviour
         interactAction = InputSystem.actions.FindAction("Interact");
 
         sensorController = sensor.GetComponent<SensorController>();
+    }
 
+    void Start()
+    {
+        // this must be in Start() instead of Awake() to make sure GameManager.instance is initialized
         poseGraph = GameManager.instance.GetPoseGraph();
         poseGraphGroundTruth = GameManager.instance.GetPoseGraphGroundTruth();
     }
