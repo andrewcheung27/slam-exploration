@@ -27,7 +27,9 @@ public class PlayerController : MonoBehaviour
 
         sensorController = sensor.GetComponent<SensorController>();
 
+        // pose graph for SLAM
         poseGraph = GameManager.instance.GetPoseGraph();
+        // "pose graph" for ground truth, which has no edges and only stores ground truth nodes
         poseGraphGroundTruth = GameManager.instance.GetPoseGraphGroundTruth();
     }
 
@@ -54,6 +56,7 @@ public class PlayerController : MonoBehaviour
         );
     }
 
+    // simulates error in pose estimation, which could come from sensor inaccuracy/drift or feature matching in Visual SLAM
     Vector3 GetRandomError()
     {
         return new Vector3(

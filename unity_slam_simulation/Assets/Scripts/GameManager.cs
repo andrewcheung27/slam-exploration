@@ -103,11 +103,6 @@ public class GameManager : MonoBehaviour
     void EvaluateSLAM()
     {
         // display nodes in the pose graph (trajectory estimated by SLAM)
-        // List<PoseNode> nodes = poseGraph.GetNodes();
-        // foreach (PoseNode node in nodes) {
-        //     GameObject n = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
-        //     poseNodesDisplayed.Add(n);
-        // }
         DisplayPoseNodes(poseGraph.GetNodes(), poseNodePrefab, poseNodesDisplayed);
 
         // display ground truth for the nodes
