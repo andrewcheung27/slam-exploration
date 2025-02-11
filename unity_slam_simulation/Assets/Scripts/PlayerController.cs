@@ -32,8 +32,7 @@ public class PlayerController : MonoBehaviour
     {
         // this must be in Start() instead of Awake() to make sure GameManager.instance is initialized
         poseGraph = GameManager.instance.GetPoseGraph();
-        // "pose graph" for ground truth, which has no edges and only stores ground truth nodes
-        poseGraphGroundTruth = GameManager.instance.GetPoseGraphGroundTruth();
+        poseGraphGroundTruth = GameManager.instance.GetPoseGraphGroundTruth();  // "pose graph" for ground truth, which has no edges and only stores ground truth nodes
     }
 
     void Update()
