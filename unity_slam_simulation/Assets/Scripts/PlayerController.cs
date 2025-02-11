@@ -26,8 +26,11 @@ public class PlayerController : MonoBehaviour
         interactAction = InputSystem.actions.FindAction("Interact");
 
         sensorController = sensor.GetComponent<SensorController>();
+    }
 
-        // pose graph for SLAM
+    void Start()
+    {
+        // this must be in Start() instead of Awake() to make sure GameManager.instance is initialized
         poseGraph = GameManager.instance.GetPoseGraph();
         // "pose graph" for ground truth, which has no edges and only stores ground truth nodes
         poseGraphGroundTruth = GameManager.instance.GetPoseGraphGroundTruth();
