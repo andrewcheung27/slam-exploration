@@ -1,5 +1,6 @@
 // based on Sam Schiffer's point cloud tutorial: https://www.youtube.com/watch?v=y6KwsRkQ86U
 
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(ParticleSystem))]
@@ -24,13 +25,13 @@ public class VoxelRenderer : MonoBehaviour
         }
     }
 
-    public void SetVoxels(Vector3[] positions, Color[] colors)
+    public void SetVoxels(List<Point> points)
     {
-        voxels = new ParticleSystem.Particle[positions.Length];
+        voxels = new ParticleSystem.Particle[points.Count];
 
-        for (int i = 0; i < positions.Length; i++) {
-            voxels[i].position = positions[i] * scale;
-            voxels[i].startColor = colors[i];
+        for (int i = 0; i < points.Count; i++) {
+            voxels[i].position = transform.InverseTransformPoint(points[i].position) * scale;  // inverse transform to do...something. idk but it worked.
+            voxels[i].startColor = points[i].color;
             voxels[i].startSize = voxelScale;
         }
 

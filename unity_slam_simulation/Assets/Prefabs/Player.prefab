@@ -121,6 +121,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa28bd9e715ac45bf8576bd66cc042e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  debug: 1
+  sensorRange: 100
+  maxSensorAngle: 60
+  numSensorRays: 1000
+  debugSensorRayDuration: 0.5
 --- !u!1 &7046989366283476299
 GameObject:
   m_ObjectHideFlags: 0
@@ -169,7 +174,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sensor: {fileID: 610128287802045889}
-  moveSpeed: 300
+  moveSpeed: 500
+  rotateSpeed: 60
+  sensorCooldown: 0.2
+  sensorError: 1
 --- !u!54 &2909121053202462198
 Rigidbody:
   m_ObjectHideFlags: 0
