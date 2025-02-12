@@ -4923,5 +4923,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae1ebb27e4cae4de19db976d870466bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  voxelScale: 0.1
+  voxelScale: 0.3
   scale: 1
