@@ -23,6 +23,12 @@ public class PoseGraph
         return nodes;
     }
 
+    public void Clear()
+    {
+        nodes.Clear();
+        constraints.Clear();
+    }
+
     public void AddNode(PoseNode node)
     {
         PoseNode lastNode = null;
