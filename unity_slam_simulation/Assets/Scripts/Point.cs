@@ -4,8 +4,8 @@ using UnityEngine;
 // represents a point in a pointcloud map
 public class Point
 {
-    private Vector3 position;
-    private Color color;
+    public Vector3 position;
+    public Color color;
 
     public Point(Vector3 _position, Color _color)
     {

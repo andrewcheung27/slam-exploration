@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
     {
         // this must be in Start() instead of Awake() to make sure GameManager.instance is initialized
         poseGraph = GameManager.instance.GetPoseGraph();
-        poseGraphGroundTruth = GameManager.instance.GetPoseGraphGroundTruth();
+        poseGraphGroundTruth = GameManager.instance.GetPoseGraphGroundTruth();  // "pose graph" for ground truth, which has no edges and only stores ground truth nodes
     }
 
     void Update()
@@ -58,6 +58,7 @@ public class PlayerController : MonoBehaviour
         );
     }
 
+    // simulates error in pose estimation, which could come from sensor inaccuracy/drift or feature matching in Visual SLAM
     Vector3 GetRandomError()
     {
         return new Vector3(
@@ -74,15 +75,16 @@ public class PlayerController : MonoBehaviour
         Vector3 rotation = transform.eulerAngles;
 
         Pose pose = new Pose(position, rotation);
-        int timePlaceholder = 69;  // TODO: time might not be necessary for PoseNodes
-        return new PoseNode(nodeIndex, pose, timePlaceholder, pointCloud);
+        return new PoseNode(nodeIndex, pose, pointCloud);
     }
 
     void ActivateSensor()
+    // in a real visual SLAM system, we would extract features from video frames and use their change between frames to estimate trajectory.
+    // here, we just get a point cloud and add nodes to the pose graph with random error.
     {
         if (interactAction.WasPressedThisFrame()) {
-            sensorController.Activate();
-            List<Point> pointCloud = null;  // TODO: get point cloud from sensor
+            // activate sensor to get point cloud
+            List<Point> pointCloud = sensorController.Activate();
 
             // add node to pose graph, with some error
             poseGraph.AddNode(CreatePoseNode(pointCloud, simulateError: true));

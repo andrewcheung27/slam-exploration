@@ -4,14 +4,12 @@ public class PoseNode
 {
     private int index;
     private Pose pose;
-    private int time;
     private List<Point> pointCloud;
 
-    public PoseNode(int _index, Pose _pose, int _time, List<Point> _pointCloud)
+    public PoseNode(int _index, Pose _pose, List<Point> _pointCloud)
     {
         index = _index;
         pose = _pose;
-        time = _time;
         pointCloud = _pointCloud;
     }
 
@@ -34,5 +32,10 @@ public class PoseNode
     public Pose GetPose()
     {
         return pose;
+    }
+
+    public List<Point> GetPointCloud()
+    {
+        return pointCloud;
     }
 }
