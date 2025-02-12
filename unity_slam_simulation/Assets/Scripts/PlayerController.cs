@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     private Rigidbody rb;
     private InputAction moveAction;
+    private InputAction rotateAction;
     private InputAction interactAction;
     private SensorController sensorController;
     private float timeSinceSensorActivated = 0f;
@@ -14,6 +15,7 @@ public class PlayerController : MonoBehaviour
 
     public GameObject sensor;
     public float moveSpeed = 10f;
+    public float rotateSpeed = 10f;
     public float sensorCooldown = 1f;  // in seconds
     public float sensorError = 1f;
 
@@ -22,6 +24,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
 
         moveAction = InputSystem.actions.FindAction("Move");
+        rotateAction = InputSystem.actions.FindAction("Rotate");
         interactAction = InputSystem.actions.FindAction("Interact");
 
         sensorController = sensor.GetComponent<SensorController>();
@@ -35,6 +38,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        RotatePlayer();
+
         timeSinceSensorActivated += Time.deltaTime;
         if (timeSinceSensorActivated > sensorCooldown) {
             ActivateSensor();
@@ -49,11 +54,23 @@ public class PlayerController : MonoBehaviour
     void MovePlayer()
     {
         Vector2 moveInput = moveAction.ReadValue<Vector2>();
-        rb.linearVelocity = new Vector3(
+        Vector3 velocity = new Vector3(
             moveInput.x * moveSpeed * Time.fixedDeltaTime,  // x axis
             rb.linearVelocity.y,  // keep velocity on y axis
             moveInput.y * moveSpeed * Time.fixedDeltaTime  // moveInput.y corresponds to z axis in 3D
         );
+        // set velocity with TransformDirection() to move relative to the direction player is facing
+        rb.linearVelocity = transform.TransformDirection(velocity);
+    }
+
+    void RotatePlayer()
+    {
+        Vector2 rotateInput = rotateAction.ReadValue<Vector2>();
+        transform.Rotate(new Vector3(
+            0f, 
+            rotateInput.x * rotateSpeed * Time.deltaTime,  // look left and right
+            0f
+        ));
     }
 
     // simulates error in pose estimation, which could come from sensor inaccuracy/drift or feature matching in Visual SLAM
