@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class SensorController : MonoBehaviour
 {
-    private List<Point> pointCloud;
     private RaycastHit hit;
 
     public bool debug = false;
@@ -12,22 +11,6 @@ public class SensorController : MonoBehaviour
     public float maxSensorAngle = 60f;  // max angle of cone
     public int numSensorRays = 1000;  // number of raycasts to do when sensor is activated
     public float debugSensorRayDuration = 5f;  // how long the debug rays are shown for
-
-    void Awake()
-    {
-        pointCloud = new List<Point>();
-    }
-
-    void DrawCircle()
-    {
-        // TODO
-        // https://www.youtube.com/watch?v=DdAfwHYNFOE
-    }
-
-    void GetPointsOnConeFace()
-    {
-        // TODO: call DrawCircle() multiple times with decreasing radius, make sure to store points in pointsOnConeFace
-    }
 
     Vector3 SampleConeDirection(Vector3 direction, float angle)
     // ChatGPT function to get a random direction on the base of a cone
@@ -47,6 +30,7 @@ public class SensorController : MonoBehaviour
     public List<Point> Activate()
     {
         MeshRenderer meshRenderer;
+        List<Point> pointCloud = new List<Point>();
 
         // clear point cloud from previous sensor activation
         pointCloud.Clear();
