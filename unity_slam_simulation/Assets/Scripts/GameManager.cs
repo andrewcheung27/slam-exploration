@@ -41,15 +41,14 @@ public class GameManager : MonoBehaviour
 
         Time.timeScale = 0;  // don't start game until user clicks start button
 
-        // startButton.onClick.AddListener(HandleStart);
-        AddButtonListeners();
+        startButton.onClick.AddListener(HandleStartStop);
+        restartStopButton.onClick.AddListener(HandleStartStop);
         restartStopButtonText = restartStopButton.GetComponentInChildren<TextMeshProUGUI>();
 
         gameSceneName = SceneManager.GetActiveScene().name;
 
         // preserve these when we switch between environment and map scenes
         DontDestroyOnLoad(gameObject);  // this GameManager
-        DontDestroyOnLoad(player);
         DontDestroyOnLoad(UI);
 
         // store PlayerController component
@@ -61,30 +60,18 @@ public class GameManager : MonoBehaviour
         return poseGraph;
     }
 
-    void AddButtonListeners()
-    {
-        startButton.onClick.AddListener(HandleStartStop);
-        restartStopButton.onClick.AddListener(HandleStartStop);
-    }
-
     IEnumerator<string> HandleStart()
-    // void HandleStart()
     {
+        // load game scene if it's not already loaded
         AsyncOperation asyncLoad = null;
         if (SceneManager.GetActiveScene().name != gameSceneName) {
-            Debug.Log("loading game scene");
             asyncLoad = SceneManager.LoadSceneAsync(gameSceneName);
         }
 
+        // wait until scene loading is finished, then move on to the code below
         while (asyncLoad != null && !asyncLoad.isDone) {
             yield return null;
         }
-
-        // if (SceneManager.GetActiveScene().name != gameSceneName) {
-        //     SceneManager.LoadScene(gameSceneName);
-        // }
-
-        Debug.Log("loaded game scene");
 
         // start game
         Time.timeScale = 1;
@@ -107,31 +94,25 @@ public class GameManager : MonoBehaviour
             Destroy(obj);
         }
         poseNodesDisplayed.Clear();
+
         // also delete pose nodes for ground truth from the previous run
         foreach (GameObject obj in poseNodesGroundTruthDisplayed) {
             Destroy(obj);
         }
         poseNodesGroundTruthDisplayed.Clear();
 
-        // enable buttons
-        // AddButtonListeners();
-
         gameRunning = true;
-        // return null;
     }
 
     IEnumerator<string> HandleStop()
-    // void HandleStop()
     {
-        Debug.Log("loading view map scene");
+        // load scene to view the map
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(viewMapSceneName);
 
+        // wait until scene loading is finished, then move on to the code below
         while (!asyncLoad.isDone) {
             yield return null;
         }
-        // SceneManager.LoadScene(viewMapSceneName);
-
-        Debug.Log("loaded view map scene");
 
         // disable sensor
         if (playerController != null) {
@@ -140,29 +121,20 @@ public class GameManager : MonoBehaviour
 
         // update button text
         restartStopButtonText.text = "Restart Simulation";
-        Debug.Log("restart button active? " + restartStopButton.IsActive());
-
-        // enable buttons
-        // AddButtonListeners();
 
         // show how SLAM performed
         EvaluateSLAM();
 
         gameRunning = false;
-        // return null;
     }
 
     void HandleStartStop()
     {
-        Debug.Log("HandleStartStop called");
         if (gameRunning) {
             StartCoroutine(HandleStop());
-            // HandleStop();
         }
         else {
-            // HandleRestart();
             StartCoroutine(HandleStart());
-            // HandleStart();
         }
     }
 

@@ -12,13 +12,13 @@ public class PlayerController : MonoBehaviour
     private float timeSinceSensorActivated = 0f;
     private int nodeIndex = 0;  // incrementing id for PoseNodes
     private PoseGraph poseGraph;
-    private bool sensorEnabled = true;
 
     public GameObject sensor;
     public float moveSpeed = 10f;
     public float rotateSpeed = 10f;
     public float sensorCooldown = 1f;  // in seconds
     public float sensorError = 1f;
+    public bool sensorEnabled = true;
 
     void Awake()
     {
