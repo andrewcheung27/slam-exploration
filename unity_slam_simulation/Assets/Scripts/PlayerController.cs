@@ -80,10 +80,12 @@ public class PlayerController : MonoBehaviour
     }
 
     void ActivateSensor()
+    // in a real visual SLAM system, we would extract features from video frames and use their change between frames to estimate trajectory.
+    // here, we just get a point cloud and add nodes to the pose graph with random error.
     {
         if (interactAction.WasPressedThisFrame()) {
-            sensorController.Activate();
-            List<Point> pointCloud = null;  // TODO: get point cloud from sensor
+            // activate sensor to get point cloud
+            List<Point> pointCloud = sensorController.Activate();
 
             // add node to pose graph, with some error
             poseGraph.AddNode(CreatePoseNode(pointCloud, simulateError: true));

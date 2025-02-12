@@ -35,4 +35,9 @@ public class PoseNode
     {
         return pose;
     }
+
+    public List<Point> GetPointCloud()
+    {
+        return pointCloud;
+    }
 }

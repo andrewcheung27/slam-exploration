@@ -94,8 +94,18 @@ public class GameManager : MonoBehaviour
 
     void DisplayPoseNodes(List<PoseNode> nodes, GameObject nodePrefab, List<GameObject> displayedNodes)
     {
+        VoxelRenderer voxelRenderer;
+
         foreach (PoseNode node in nodes) {
+            Debug.Log("Node point cloud: " + node.GetPointCloud());
+            // spawn node GameObject based on its prefab
             GameObject n = Instantiate(nodePrefab, node.GetPose().position, Quaternion.identity);
+            // attach VoxelRenderer script
+            n.AddComponent<VoxelRenderer>();
+            // display point cloud for that node
+            if (n.TryGetComponent<VoxelRenderer>(out voxelRenderer)) {
+                voxelRenderer.SetVoxels(node.GetPointCloud());
+            }
             displayedNodes.Add(n);
         }
     }

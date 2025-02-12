@@ -1116,12 +1116,20 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1108649392797956339, guid: 77dbef44c5491477ea9af511eea81be4, type: 3}
+      propertyPath: debug
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108649392797956339, guid: 77dbef44c5491477ea9af511eea81be4, type: 3}
       propertyPath: pointPrefab
       value: 
       objectReference: {fileID: 3539657309303614705, guid: 16d8fddd4cf7e4a378eef5a1d9a0efc2, type: 3}
     - target: {fileID: 1108649392797956339, guid: 77dbef44c5491477ea9af511eea81be4, type: 3}
       propertyPath: sensorRange
       value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 1108649392797956339, guid: 77dbef44c5491477ea9af511eea81be4, type: 3}
+      propertyPath: debugSensorRayDuration
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6129640836338445123, guid: 77dbef44c5491477ea9af511eea81be4, type: 3}
       propertyPath: debug
@@ -1701,12 +1709,12 @@ GameObject:
   - component: {fileID: 1864143598}
   - component: {fileID: 1864143600}
   m_Layer: 0
-  m_Name: Particle System
+  m_Name: Particle System from tutorial (can remove)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1864143597
 Transform:
   m_ObjectHideFlags: 0
