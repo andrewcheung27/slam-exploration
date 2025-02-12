@@ -11,7 +11,6 @@ public class PlayerController : MonoBehaviour
     private float timeSinceSensorActivated = 0f;
     private int nodeIndex = 0;  // incrementing id for PoseNodes
     private PoseGraph poseGraph;
-    private PoseGraph poseGraphGroundTruth;
 
     public GameObject sensor;
     public float moveSpeed = 10f;
@@ -32,7 +31,6 @@ public class PlayerController : MonoBehaviour
     {
         // this must be in Start() instead of Awake() to make sure GameManager.instance is initialized
         poseGraph = GameManager.instance.GetPoseGraph();
-        poseGraphGroundTruth = GameManager.instance.GetPoseGraphGroundTruth();  // "pose graph" for ground truth, which has no edges and only stores ground truth nodes
     }
 
     void Update()
@@ -67,17 +65,6 @@ public class PlayerController : MonoBehaviour
             Random.Range(-1 * sensorError, sensorError));
     }
 
-    PoseNode CreatePoseNode(List<Point> pointCloud, bool simulateError=true)
-    {
-        Vector3 position = transform.position;
-        if (simulateError) position += GetRandomError();
-        // TODO: simulate error for rotation?
-        Vector3 rotation = transform.eulerAngles;
-
-        Pose pose = new Pose(position, rotation);
-        return new PoseNode(nodeIndex, pose, pointCloud);
-    }
-
     void ActivateSensor()
     // in a real visual SLAM system, we would extract features from video frames and use their change between frames to estimate trajectory.
     // here, we just get a point cloud and add nodes to the pose graph with random error.
@@ -86,11 +73,17 @@ public class PlayerController : MonoBehaviour
             // activate sensor to get point cloud
             List<Point> pointCloud = sensorController.Activate();
 
-            // add node to pose graph, with some error
-            poseGraph.AddNode(CreatePoseNode(pointCloud, simulateError: true));
+            Vector3 position = transform.position;
+            Vector3 positionWithError = position + GetRandomError();
+            Vector3 rotation = transform.eulerAngles;
+            Vector3 rotationWithError = rotation;  // TODO: simulate error for rotation?
 
-            // add node to ground truth, with no point cloud and no error
-            poseGraphGroundTruth.AddNode(CreatePoseNode(null, simulateError: false));
+            Pose pose = new Pose(positionWithError, rotationWithError);
+            Pose poseGroundTruth = new Pose(position, rotation);
+
+            // add node to pose graph
+            PoseNode node = new PoseNode(nodeIndex, pose, poseGroundTruth, pointCloud);
+            poseGraph.AddNode(node);
 
             // bookkeeping
             nodeIndex++;

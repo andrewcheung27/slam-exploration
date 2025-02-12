@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8800967378181641875}
   - component: {fileID: 6918670590202576774}
   - component: {fileID: -931089449257861533}
+  - component: {fileID: 7430401970785755028}
   m_Layer: 0
   m_Name: PoseNode
   m_TagString: Untagged
@@ -4910,3 +4911,17 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &7430401970785755028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8115437029381018009}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae1ebb27e4cae4de19db976d870466bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  voxelScale: 0.1
+  scale: 1

@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     private PoseGraph poseGraph;
-    private PoseGraph poseGraphGroundTruth;
     private List<GameObject> poseNodesDisplayed;
     private List<GameObject> poseNodesGroundTruthDisplayed;
     private bool gameRunning = false;  // whether the game is running now
@@ -31,7 +30,6 @@ public class GameManager : MonoBehaviour
         }
 
         poseGraph = new PoseGraph(_debug: debug);
-        poseGraphGroundTruth = new PoseGraph(_trackConstraints: false, _debug: false);
         poseNodesDisplayed = new List<GameObject>();
         poseNodesGroundTruthDisplayed = new List<GameObject>();
 
@@ -45,11 +43,6 @@ public class GameManager : MonoBehaviour
     public PoseGraph GetPoseGraph()
     {
         return poseGraph;
-    }
-
-    public PoseGraph GetPoseGraphGroundTruth()
-    {
-        return poseGraphGroundTruth;
     }
 
     void HandleStart()
@@ -92,31 +85,22 @@ public class GameManager : MonoBehaviour
         gameRunning = !gameRunning;
     }
 
-    void DisplayPoseNodes(List<PoseNode> nodes, GameObject nodePrefab, List<GameObject> displayedNodes)
+    void EvaluateSLAM()
     {
         VoxelRenderer voxelRenderer;
 
-        foreach (PoseNode node in nodes) {
-            if (node.GetPointCloud() != null) {
-                // spawn node GameObject based on its prefab
-                GameObject n = Instantiate(nodePrefab, node.GetPose().position, Quaternion.identity);
-                // attach VoxelRenderer script
-                n.AddComponent<VoxelRenderer>();
-                // display point cloud for that node
-                if (n.TryGetComponent<VoxelRenderer>(out voxelRenderer)) {
-                    voxelRenderer.SetVoxels(node.GetPointCloud());
-                }
-                displayedNodes.Add(n);
+        foreach (PoseNode node in poseGraph.GetNodes()) {
+            // spawn node GameObject based on its prefab
+            GameObject nodeObj = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
+            // display point cloud for that node
+            if (nodeObj.TryGetComponent<VoxelRenderer>(out voxelRenderer)) {
+                voxelRenderer.SetVoxels(node.GetPointCloud());
             }
+            poseNodesDisplayed.Add(nodeObj);
+
+            // spawn ground truth node GameObject based on the other prefab
+            GameObject nodeObjGT = Instantiate(poseNodeGroundTruthPrefab, node.GetPoseGroundTruth().position, Quaternion.identity);
+            poseNodesGroundTruthDisplayed.Add(nodeObjGT);
         }
-    }
-
-    void EvaluateSLAM()
-    {
-        // display nodes in the pose graph (trajectory estimated by SLAM)
-        DisplayPoseNodes(poseGraph.GetNodes(), poseNodePrefab, poseNodesDisplayed);
-
-        // display ground truth for the nodes
-        DisplayPoseNodes(poseGraphGroundTruth.GetNodes(), poseNodeGroundTruthPrefab, poseNodesGroundTruthDisplayed);
     }
 }
