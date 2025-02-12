@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
     public float rotateSpeed = 10f;
     public float sensorCooldown = 1f;  // in seconds
     public float sensorError = 1f;
+    public bool sensorEnabled = true;
 
     void Awake()
     {
@@ -86,6 +87,10 @@ public class PlayerController : MonoBehaviour
     // in a real visual SLAM system, we would extract features from video frames and use their change between frames to estimate trajectory.
     // here, we just get a point cloud and add nodes to the pose graph with random error.
     {
+        if (!sensorEnabled) {
+            return;
+        }
+
         if (interactAction.WasPressedThisFrame()) {
             // activate sensor to get point cloud
             List<Point> pointCloud = sensorController.Activate();
@@ -106,5 +111,10 @@ public class PlayerController : MonoBehaviour
             nodeIndex++;
             timeSinceSensorActivated = 0f;
         }
+    }
+
+    public void setSensorEnabled(bool b)
+    {
+        sensorEnabled = b;
     }
 }
