@@ -75,8 +75,7 @@ public class PlayerController : MonoBehaviour
         Vector3 rotation = transform.eulerAngles;
 
         Pose pose = new Pose(position, rotation);
-        int timePlaceholder = 69;  // TODO: time might not be necessary for PoseNodes
-        return new PoseNode(nodeIndex, pose, timePlaceholder, pointCloud);
+        return new PoseNode(nodeIndex, pose, pointCloud);
     }
 
     void ActivateSensor()
