@@ -96,6 +96,9 @@ public class GameManager : MonoBehaviour
             playerController.setSensorEnabled(true);
         }
 
+        // clear pose graph from previous run
+        poseGraph.Clear();
+
         // delete the pose nodes from the previous run
         foreach (GameObject obj in poseNodesDisplayed) {
             Destroy(obj);
