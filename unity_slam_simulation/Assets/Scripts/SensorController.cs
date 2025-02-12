@@ -3,14 +3,11 @@ using UnityEngine;
 
 public class SensorController : MonoBehaviour
 {
-    private RaycastHit hit;
-
     public bool debug = false;
-    public GameObject pointPrefab;
     public float sensorRange = 100f;
     public float maxSensorAngle = 60f;  // max angle of cone
     public int numSensorRays = 1000;  // number of raycasts to do when sensor is activated
-    public float debugSensorRayDuration = 5f;  // how long the debug rays are shown for
+    public float debugSensorRayDuration = 1f;  // how long the debug rays are shown for
 
     Vector3 SampleConeDirection(Vector3 direction, float angle)
     // ChatGPT function to get a random direction on the base of a cone
