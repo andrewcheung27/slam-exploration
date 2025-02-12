@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
         }
         else {
             Destroy(gameObject);
+            return;
         }
 
         poseGraph = new PoseGraph(_debug: debug);
@@ -41,10 +42,16 @@ public class GameManager : MonoBehaviour
 
         Time.timeScale = 0;  // don't start game until user clicks start button
 
+        // show start stuff (should be inactive by default in the scene)
+        startButton.gameObject.SetActive(true);
+        startText.gameObject.SetActive(true);
+
+        // button setup
         startButton.onClick.AddListener(HandleStartStop);
         restartStopButton.onClick.AddListener(HandleStartStop);
         restartStopButtonText = restartStopButton.GetComponentInChildren<TextMeshProUGUI>();
 
+        // save name of the game scene so we can return to it later
         gameSceneName = SceneManager.GetActiveScene().name;
 
         // preserve these when we switch between environment and map scenes
