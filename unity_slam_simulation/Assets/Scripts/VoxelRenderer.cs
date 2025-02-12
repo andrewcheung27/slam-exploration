@@ -30,8 +30,7 @@ public class VoxelRenderer : MonoBehaviour
         voxels = new ParticleSystem.Particle[points.Count];
 
         for (int i = 0; i < points.Count; i++) {
-            // voxels[i].position = points[i].position * scale;
-            voxels[i].position = transform.InverseTransformPoint(points[i].position);
+            voxels[i].position = transform.InverseTransformPoint(points[i].position) * scale;  // inverse transform to do...something. idk but it worked.
             voxels[i].startColor = points[i].color;
             voxels[i].startSize = voxelScale;
         }
