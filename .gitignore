@@ -1,3 +1,4 @@
 # Visual Studio Code cache
 .vscode/
+./unity_slam_exploration/Assets/Resources/**/*/
 
