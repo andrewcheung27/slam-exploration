@@ -569,7 +569,7 @@
                 {
                     "name": "up",
                     "id": "ebb5d605-66f0-42d3-851c-323100564e5a",
-                    "path": "<Keyboard>/h",
+                    "path": "<Keyboard>/space",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -580,7 +580,7 @@
                 {
                     "name": "down",
                     "id": "884d1a0f-f7b0-485c-9549-aa07e23f1ff0",
-                    "path": "<Keyboard>/f",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
