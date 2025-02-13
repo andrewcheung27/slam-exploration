@@ -8,6 +8,9 @@ public class PlayerController : MonoBehaviour
     private InputAction moveAction;
     private InputAction rotateAction;
     private InputAction interactAction;
+    private InputAction riseAction;
+    private InputAction straightenAction;
+    private bool shouldStraighten = false;
     private SensorController sensorController;
     private float timeSinceSensorActivated = 0f;
     private int nodeIndex = 0;  // incrementing id for PoseNodes
@@ -27,6 +30,8 @@ public class PlayerController : MonoBehaviour
         moveAction = InputSystem.actions.FindAction("Move");
         rotateAction = InputSystem.actions.FindAction("Rotate");
         interactAction = InputSystem.actions.FindAction("Interact");
+        riseAction = InputSystem.actions.FindAction("Rise");
+        straightenAction = InputSystem.actions.FindAction("Straighten");
 
         sensorController = sensor.GetComponent<SensorController>();
     }
@@ -40,6 +45,16 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         RotatePlayer();
+        RisePlayer();
+        if (straightenAction.WasPressedThisFrame())
+        {
+            shouldStraighten = !shouldStraighten; 
+        }
+
+        if (shouldStraighten)
+        {
+            StraightenPlayer();
+        }
 
         timeSinceSensorActivated += Time.deltaTime;
         if (timeSinceSensorActivated > sensorCooldown) {
@@ -68,11 +83,33 @@ public class PlayerController : MonoBehaviour
     {
         Vector2 rotateInput = rotateAction.ReadValue<Vector2>();
         transform.Rotate(new Vector3(
-            0f, 
+            rotateInput.y * rotateSpeed * Time.deltaTime, 
             rotateInput.x * rotateSpeed * Time.deltaTime,  // look left and right
             0f
         ));
     }
+
+    void RisePlayer()
+    {
+        Vector2 riseInput = riseAction.ReadValue<Vector2>(); 
+        Vector3 velocity = new Vector3(
+                   rb.linearVelocity.x,  
+                   riseInput.y * moveSpeed * Time.fixedDeltaTime,  
+                   rb.linearVelocity.y 
+               );
+        // set velocity with TransformDirection() to move relative to the direction player is facing
+        rb.linearVelocity = transform.TransformDirection(velocity);
+    }
+
+    void StraightenPlayer()
+    {
+   
+        Quaternion targetRotation = Quaternion.Euler(0f, transform.rotation.eulerAngles.y, 0f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2f); // Adjust speed
+        
+        
+    }
+
 
     // simulates error in pose estimation, which could come from sensor inaccuracy/drift or feature matching in Visual SLAM
     Vector3 GetRandomError()
