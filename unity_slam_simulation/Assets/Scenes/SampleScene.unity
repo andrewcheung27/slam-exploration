@@ -330,6 +330,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1108649392797956339, guid: 77dbef44c5491477ea9af511eea81be4, type: 3}
+      propertyPath: sensorLineRendererPrefab
+      value: 
+      objectReference: {fileID: 1950110359220326830, guid: a5e685cb0d81c4ab6b37a6ac799c8a4b, type: 3}
     - target: {fileID: 6129640836338445123, guid: 77dbef44c5491477ea9af511eea81be4, type: 3}
       propertyPath: cam
       value: 
