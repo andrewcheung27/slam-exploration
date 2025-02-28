@@ -21,15 +21,14 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 10f;
     public float rotateSpeed = 10f;
     public float sensorCooldown = 1f;  // how long before sensor can be activated again (in seconds)
-    // public float minSensorError = 0.1f;  // simulated pose estimation error
-    // public float maxSensorError = 1f;
     public float sensorError = 1f;
     public bool sensorEnabled = true;
 
     [Header ("Pose Graph")]
     private PoseGraph poseGraph;
     private int nodeIndex = 0;  // incrementing id for PoseNodes
-    private Pose prevPoseError;  // error from previous pose estimated. used to simulate drift.
+    private Pose prevPoseEstimated;  // the previous pose estimated. used to simulate drift.
+    private Pose prevPoseGT;
 
     void Awake()
     {
@@ -43,8 +42,8 @@ public class PlayerController : MonoBehaviour
 
         sensorController = sensor.GetComponent<SensorController>();
 
-        // initialize prevPoseError to zero
-        prevPoseError = new Pose(Vector3.zero, Vector3.zero);
+        prevPoseEstimated = new Pose(transform.position, transform.eulerAngles);
+        prevPoseGT = new Pose(transform.position, transform.eulerAngles);
     }
 
     void Start()
@@ -118,53 +117,31 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 2f); // Adjust speed
     }
 
-    // randomly return either -1 or 1
-    int GetRandomSign()
-    {
-        return Random.Range(0, 2) == 0 ? -1 : 1;
-    }
-
     // simulates error in pose estimation, which could come from sensor inaccuracy/drift or feature matching in Visual SLAM
     Vector3 GetRandomError()
     {
-        // return new Vector3(
-        //     Random.Range(minSensorError, maxSensorError) * GetRandomSign(), 
-        //     Random.Range(minSensorError, maxSensorError),  // keep Y positive because ground level is at 0
-        //     Random.Range(minSensorError, maxSensorError) * GetRandomSign());
-
         return new Vector3(
             Random.Range(-1 * sensorError, sensorError), 
-            Random.Range(0, sensorError),  // keep Y positive because ground level is at 0
+            Random.Range(-1 * sensorError, sensorError), 
             Random.Range(-1 * sensorError, sensorError)
         );
     }
 
-    // // increase sensor error
-    // void UpdateSensorDrift()
-    // {
-    //     // minSensorError += 0.1f;
-    //     // maxSensorError += 0.15f;
-    //     // sensorError += 0.1f;
-    // }
-
-    Vector3 GetPositionError()
+    Vector3 GetPositionWithError(Vector3 currentPositionGT)
     {
-        Vector3 prevPositionError = new Vector3(prevPoseError.position.x, 0f, prevPoseError.position.z);  // don't let Y error accumulate
-        return prevPositionError + GetRandomError();
+        // get vector from previous GT position to current GT position
+        Vector3 prevPosition = prevPoseGT.position;
+        Vector3 v = currentPositionGT - prevPosition;
+        // add random error
+        v += GetRandomError();
+        // add it to previous estimated position to get new estimated position, with accumulating error
+        return prevPoseEstimated.position + v;
     }
 
-    Vector3 GetRotationError()
+    Vector3 GetRotationWithError(Vector3 currentRotationGT)
     {
         // TODO: simulate random error for rotation?
-        return Vector3.zero;
-    }
-
-    Vector3 GetPositionWithError(Vector3 position)
-    {
-        Vector3 prevPositionError = new Vector3(prevPoseError.position.x, 0f, prevPoseError.position.z);  // don't let Y error accumulate
-        Vector3 positionWithError = position + prevPositionError + GetRandomError();
-        // return positionWithError / 2;  // divide by 2 to reduce error accumulation
-        return positionWithError;
+        return currentRotationGT;
     }
 
     void ActivateSensor()
@@ -183,24 +160,20 @@ public class PlayerController : MonoBehaviour
             Vector3 position = transform.position;
             Vector3 rotation = transform.eulerAngles;
             Pose poseGroundTruth = new Pose(position, rotation);
-            Debug.Log("pose ground truth: " + poseGroundTruth);
 
             // position/rotation with error from the last node and additional simulated error
-            Vector3 positionError = GetPositionError();
-            Vector3 positionWithError = position + positionError;
-            // Vector3 positionWithError = GetPositionWithError(position);
-            Vector3 rotationError = GetRotationError();
-            Vector3 rotationWithError = rotation + rotationError;
+            Vector3 positionWithError = GetPositionWithError(position);
+            Vector3 rotationWithError = rotation;
 
-            // update lastEstimatedPose with the current pose
-            prevPoseError = new Pose(positionError, rotationError);
-            // prevPoseError = new Pose(positionWithError, rotationWithError);
-            Debug.Log("accumulated pose error: " + prevPoseError);
+            // update the previous pose estimated
+            prevPoseEstimated = new Pose(positionWithError, rotationWithError);
+            // update the previous ground truth pose
+            prevPoseGT = poseGroundTruth;
 
             // add node to pose graph
-            PoseNode node = new PoseNode(nodeIndex, new Pose(positionWithError, rotationWithError), poseGroundTruth, pointCloud);
-            // PoseNode node = new PoseNode(nodeIndex, prevPoseError, poseGroundTruth, pointCloud);
+            PoseNode node = new PoseNode(nodeIndex, prevPoseEstimated, poseGroundTruth, pointCloud);
             poseGraph.AddNode(node);
+            // Debug.Log("difference between estimate and GT positions: " + (prevPoseEstimated.position - poseGroundTruth.position).magnitude.ToString());
 
             // bookkeeping
             nodeIndex++;

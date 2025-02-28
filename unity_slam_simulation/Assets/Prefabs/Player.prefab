@@ -125,6 +125,7 @@ MonoBehaviour:
   sensorRange: 100
   maxSensorAngle: 60
   numSensorRays: 1000
+  sensorLineRendererPrefab: {fileID: 0}
   debugSensorRayDuration: 0.5
 --- !u!1 &7046989366283476299
 GameObject:
@@ -178,7 +179,7 @@ MonoBehaviour:
   moveSpeed: 500
   rotateSpeed: 60
   sensorCooldown: 0.2
-  sensorError: 1
+  sensorError: 2
   sensorEnabled: 1
 --- !u!54 &2909121053202462198
 Rigidbody:
