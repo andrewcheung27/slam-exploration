@@ -21,4 +21,9 @@ public class Pose
     {
         return $"Pose(position={position}, rotation={rotation})";
     }
+
+    public void SetPosition(Vector3 pos)
+    {
+        position = pos;
+    }
 }

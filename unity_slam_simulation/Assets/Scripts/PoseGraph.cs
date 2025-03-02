@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
-// using MathNet.Numerics.LinearAlgebra.Double;
 
 public class PoseGraph
 {
@@ -14,8 +13,8 @@ public class PoseGraph
     // maps pair of PoseNodes to a Pose, representing a spatial constraint between the nodes
     private Dictionary<Tuple<PoseNode, PoseNode>, Pose> constraints;
     private int poseDimensions = 3;  // number of dimensions we're using for a Pose (3 dimensions of position, we aren't using rotation for simplicty)
-    private Matrix<double> normalEquationMatrix;  // H
-    private Vector<double> coefficientVector;  // b
+    private Matrix<float> normalEquationMatrix;  // H
+    private Matrix<float> coefficientVector;  // b
 
     public PoseGraph(bool _debug=false)
     {
@@ -58,41 +57,41 @@ public class PoseGraph
         constraints.Add(new Tuple<PoseNode, PoseNode>(node1, node2), pose);
     }
 
-    public Matrix<double> ComputeError(Pose p)
+    public Matrix<float> ComputeError(Pose p)
     {
         // TODO: this should be observed distance - difference between nodes in current graph (see 54:30)
-        double[, ] arr = {{p.position.x}, {p.position.y}, {p.position.z}};  // 3x1
-        return Matrix<double>.Build.DenseOfArray(arr);
+        float[, ] arr = {{p.position.x}, {p.position.y}, {p.position.z}};  // 3x1
+        return Matrix<float>.Build.DenseOfArray(arr);
     }
 
-    public Tuple<Matrix<double>, Matrix<double>> ComputeJacobianBlocks(Pose p)
+    public Tuple<Matrix<float>, Matrix<float>> ComputeJacobianBlocks(Pose p)
     {
-        double[, ] arrA = {
+        float[, ] arrA = {
             {-1, 0, p.position.y}, 
             {0, -1, -1 * p.position.x}, 
             {0, 0, p.position.z}
         };
-        var A = Matrix<double>.Build.DenseOfArray(arrA);
-        double[, ] arrB = {
+        var A = Matrix<float>.Build.DenseOfArray(arrA);
+        float[, ] arrB = {
             {1, 0, 0}, 
             {0, 1, 0}, 
             {0, 0, 1}
         };
-        var B = Matrix<double>.Build.DenseOfArray(arrB);
+        var B = Matrix<float>.Build.DenseOfArray(arrB);
 
-        return new Tuple<Matrix<double>, Matrix<double>>(A, B);
+        return new Tuple<Matrix<float>, Matrix<float>>(A, B);
     }
 
     // mutates normalEquationMatrix and coefficientVector to build linear system
     public void BuildLinearSystem()
     {
         // TODO: put information matrix somewhere else
-        double[, ] omega = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}};
-        var infoMatrix = Matrix<double>.Build.DenseOfArray(omega);
+        float[, ] omega = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        var infoMatrix = Matrix<float>.Build.DenseOfArray(omega);
         // normal equation matrix
-        normalEquationMatrix = Matrix<double>.Build.Sparse(100, 100);
+        normalEquationMatrix = Matrix<float>.Build.Sparse(100, 100);
         // coefficient vector
-        coefficientVector = Vector<double>.Build.Sparse(100, 1);
+        coefficientVector = Matrix<float>.Build.Sparse(100, 1);
 
         // for each constraint:
         foreach (Tuple<PoseNode, PoseNode> nodePair in constraints.Keys) {
@@ -104,14 +103,14 @@ public class PoseGraph
             Pose constraint = constraints[nodePair];
 
             // compute error
-            Matrix<double> error = ComputeError(constraint);
+            Matrix<float> error = ComputeError(constraint);
 
             // compute blocks of Jacobian
             var (A, B) = ComputeJacobianBlocks(constraint);
 
             // update coefficient vector
-            coefficientVector.SetSubVector(i, poseDimensions, (A.Transpose() * infoMatrix * error).Column(0));
-            coefficientVector.SetSubVector(j, poseDimensions, (B.Transpose() * infoMatrix * error).Column(0));
+            coefficientVector.SetSubMatrix(i, 0, A.Transpose() * infoMatrix * error);
+            coefficientVector.SetSubMatrix(j, 0, B.Transpose() * infoMatrix * error);
 
             // update normal equation matrix
             normalEquationMatrix.SetSubMatrix(i, i, A.Transpose() * infoMatrix * A);
@@ -134,9 +133,18 @@ public class PoseGraph
             var b = coefficientVector;
 
             // solve linear system
-            Vector<double> deltaX = H.TransposeThisAndMultiply(H).Cholesky().Solve(H.TransposeThisAndMultiply(b));
+            // Vector<float> deltaX = H.TransposeThisAndMultiply(H).Cholesky().Solve(H.TransposeThisAndMultiply(b));
+            Matrix<float> deltaX = H.Cholesky().Solve(b);
 
             // x = x + deltaX
+            for (int i = 0; i < nodes.Count; i++) {
+                Pose p = nodes[i].GetPose();
+                var x = (float) deltaX[i, 0];
+                var y = (float) deltaX[i, 1];
+                var z = (float) deltaX[i, 2];
+                p.SetPosition(p.position + new Vector3(x, y, z));
+                // nodes[i].SetPose(p);
+            }
         }
 
         // return x
