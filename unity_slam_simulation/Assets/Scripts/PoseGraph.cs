@@ -57,10 +57,13 @@ public class PoseGraph
         constraints.Add(new Tuple<PoseNode, PoseNode>(node1, node2), pose);
     }
 
-    public Matrix<float> ComputeError(Pose p)
+    public Matrix<float> ComputeError(PoseNode node1, PoseNode node2, Pose constraint)
     {
         // TODO: this should be observed distance - difference between nodes in current graph (see 54:30)
-        float[, ] arr = {{p.position.x}, {p.position.y}, {p.position.z}};  // 3x1
+        Vector3 nodeDiff = node2.GetPose().position - node1.GetPose().position;
+        Vector3 error = constraint.position - nodeDiff;
+        // float[, ] arr = {{constraint.position.x}, {constraint.position.y}, {constraint.position.z}};  // 3x1
+        float[, ] arr = {{error.x, error.y, error.z}};
         return Matrix<float>.Build.DenseOfArray(arr);
     }
 
@@ -89,9 +92,9 @@ public class PoseGraph
         float[, ] omega = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
         var infoMatrix = Matrix<float>.Build.DenseOfArray(omega);
         // normal equation matrix
-        normalEquationMatrix = Matrix<float>.Build.Sparse(100, 100);
+        normalEquationMatrix = Matrix<float>.Build.Sparse(nodes.Count * poseDimensions, nodes.Count * poseDimensions);
         // coefficient vector
-        coefficientVector = Matrix<float>.Build.Sparse(100, 1);
+        coefficientVector = Matrix<float>.Build.Sparse(nodes.Count * poseDimensions, 1);
 
         // for each constraint:
         foreach (Tuple<PoseNode, PoseNode> nodePair in constraints.Keys) {
@@ -103,7 +106,7 @@ public class PoseGraph
             Pose constraint = constraints[nodePair];
 
             // compute error
-            Matrix<float> error = ComputeError(constraint);
+            Matrix<float> error = ComputeError(nodePair.Item1, nodePair.Item2, constraint);
 
             // compute blocks of Jacobian
             var (A, B) = ComputeJacobianBlocks(constraint);
@@ -123,6 +126,9 @@ public class PoseGraph
     // TODO: implement pose graph optimization
     public void Optimize()
     {
+        Debug.Log("PoseGraph.Optimize() called");
+        // return;
+
         // x is the pose graph
         bool converged = false;
 
@@ -131,20 +137,30 @@ public class PoseGraph
             BuildLinearSystem();
             var H = normalEquationMatrix;
             var b = coefficientVector;
+            Debug.Log("H = " + H);
+            Debug.Log("b = " + b);
 
             // solve linear system
             // Vector<float> deltaX = H.TransposeThisAndMultiply(H).Cholesky().Solve(H.TransposeThisAndMultiply(b));
-            Matrix<float> deltaX = H.Cholesky().Solve(b);
+            // Matrix<float> deltaX = H.Cholesky().Solve(b);
+            Matrix<float> deltaX = H.Solve(b);
+            Debug.Log("DELTA X: " + deltaX);
 
-            // x = x + deltaX
-            for (int i = 0; i < nodes.Count; i++) {
-                Pose p = nodes[i].GetPose();
-                var x = (float) deltaX[i, 0];
-                var y = (float) deltaX[i, 1];
-                var z = (float) deltaX[i, 2];
-                p.SetPosition(p.position + new Vector3(x, y, z));
-                // nodes[i].SetPose(p);
-            }
+            // TODO: update node positions
+            // // x = x + deltaX
+            // for (int i = 0; i < nodes.Count; i++) {
+            //     Pose p = nodes[i].GetPose();
+            //     var fuck = deltaX[i, 0];
+            //     // var x = (float) deltaX[i, 0];
+            //     // var y = (float) deltaX[i, 1];
+            //     // var z = (float) deltaX[i, 2];
+            //     // p.SetPosition(p.position + new Vector3(x, y, z));
+            //     p.SetPosition(p.position + new Vector3(fuck, fuck, fuck));
+            //     // nodes[i].SetPose(p);
+            // }
+
+            // TODO: converge if error is less than threshold
+            converged = true;
         }
 
         // return x
