@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
     public bool debug = false;
     public TextMeshProUGUI startText;
+    public TextMeshProUGUI optimizingPoseGraphText;
     public Button startButton;
     public Button restartStopButton;
     public GameObject poseNodePrefab;  // to display nodes on the pose graph
@@ -116,6 +117,10 @@ public class GameManager : MonoBehaviour
 
     IEnumerator<string> HandleStop()
     {
+        // optimize pose graph
+        optimizingPoseGraphText.gameObject.SetActive(true);
+        poseGraph.Optimize();
+
         // load scene to view the map
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(viewMapSceneName);
 
@@ -123,6 +128,9 @@ public class GameManager : MonoBehaviour
         while (!asyncLoad.isDone) {
             yield return null;
         }
+
+        // hide message since pose graph optimization is done
+        optimizingPoseGraphText.gameObject.SetActive(false);
 
         // disable sensor
         if (playerController != null) {

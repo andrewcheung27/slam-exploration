@@ -885,6 +885,10 @@ PrefabInstance:
       propertyPath: restartStopButton
       value: 
       objectReference: {fileID: 2003448174}
+    - target: {fileID: 8535989557777000626, guid: 4b2a138a14d6a43c6abe6a23110415e7, type: 3}
+      propertyPath: optimizingPoseGraphText
+      value: 
+      objectReference: {fileID: 8526902736690234767}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1240,6 +1244,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7b862e23e76f44562ac63732a3d534f5, type: 3}
+--- !u!114 &8526902736690234767 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 73103328162248953, guid: 7b862e23e76f44562ac63732a3d534f5, type: 3}
+  m_PrefabInstance: {fileID: 8526902736690234766}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
