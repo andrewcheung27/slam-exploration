@@ -57,6 +57,19 @@ public class PoseGraph
         constraints.Add(new Tuple<PoseNode, PoseNode>(node1, node2), pose);
     }
 
+    // calculate Absolute Trajectory Error as sum of the differences between each node's estimated position and its ground truth position.
+    // currently, this doesn't include rotation.
+    public float CalculateAbsoluteTrajectoryError()
+    {
+        float error = 0f;
+
+        foreach (PoseNode node in nodes) {
+            error += Mathf.Abs((node.GetPose().position - node.GetPoseGroundTruth().position).magnitude);
+        }
+
+        return error;
+    }
+
     public Matrix<float> ComputeError(PoseNode node1, PoseNode node2, Pose constraint)
     {
         // TODO: this should be observed distance - difference between nodes in current graph (see 54:30)
@@ -127,7 +140,7 @@ public class PoseGraph
     public void Optimize()
     {
         Debug.Log("PoseGraph.Optimize() called");
-        // return;
+        return;
 
         // x is the pose graph
         bool converged = false;
