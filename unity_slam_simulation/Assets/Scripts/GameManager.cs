@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
 {
     private PoseGraph poseGraph = null;
     private List<GameObject> poseNodesDisplayed = null;
+    private List<Point> globalPointCloud = null;
     private List<GameObject> poseNodesGroundTruthDisplayed = null;
     private bool gameRunning = false;  // whether the game is running now
     private TextMeshProUGUI restartStopButtonText = null;
@@ -149,25 +150,103 @@ public class GameManager : MonoBehaviour
     }
 
 
+    List<Point> FilterClosePointsGrid(List<Point> points, float cellSize)
+    {
+        Dictionary<Vector3Int, Point> grid = new Dictionary<Vector3Int, Point>();
+
+        foreach (Point point in points)
+        {
+            Vector3Int cell = new Vector3Int(
+                Mathf.FloorToInt(point.position.x / cellSize),
+                Mathf.FloorToInt(point.position.y / cellSize),
+                Mathf.FloorToInt(point.position.z / cellSize)
+            );
+
+            // Check if the cell already has a representative point
+            if (!grid.ContainsKey(cell))
+            {
+                grid[cell] = point; // Store the first point found in this cell
+            }
+        }
+
+        return new List<Point>(grid.Values);
+    }
+
+
     void EvaluateSLAM()
     {
         VoxelRenderer voxelRenderer;
+        List<Point> globalPointCloud = new List<Point>();
 
-        foreach (PoseNode node in poseGraph.GetNodes()) {
-            // spawn node GameObject based on its prefab
+        // Collect point clouds
+        foreach (PoseNode node in poseGraph.GetNodes())
+        {
+            globalPointCloud.AddRange(node.GetPointCloud());
+        }
+
+        // Filter with spatial grid (faster!)
+        float gridSize = 0.5f; // Adjust grid size based on density
+        List<Point> filteredCloud = FilterClosePointsGrid(globalPointCloud, gridSize);
+
+        // Create visualization
+        GameObject temp = Instantiate(poseNodePrefab, poseGraph.GetNodes()[0].GetPose().position, Quaternion.identity);
+        if (temp.TryGetComponent<VoxelRenderer>(out voxelRenderer))
+        {
+            voxelRenderer.SetVoxels(filteredCloud);
+        }
+
+        // Spawn nodes
+        foreach (PoseNode node in poseGraph.GetNodes())
+        {
             GameObject nodeObj = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
-
-            // display point cloud for that node
-            if (nodeObj.TryGetComponent<VoxelRenderer>(out voxelRenderer)) {
-                voxelRenderer.SetVoxels(node.GetPointCloud());
-            }
-
-            // keep track of nodes so we can clear them later
+            //if (nodeObj.TryGetComponent<VoxelRenderer>(out voxelRenderer))
+            //{
+            //    voxelRenderer.SetVoxels(node.GetPointCloud());
+            //}
             poseNodesDisplayed.Add(nodeObj);
 
-            // spawn ground truth node GameObject based on the other prefab
             GameObject nodeObjGT = Instantiate(poseNodeGroundTruthPrefab, node.GetPoseGroundTruth().position, Quaternion.identity);
             poseNodesGroundTruthDisplayed.Add(nodeObjGT);
         }
     }
+
+    //void EvaluateSLAM()
+    //{
+    //    VoxelRenderer voxelRenderer;
+
+    //    foreach (PoseNode node in poseGraph.GetNodes())
+    //    {
+    //        GameObject nodeObj = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
+    //        globalPointCloud.AddRange(node.GetPointCloud());
+    //    }
+
+    //    List<Point> filteredCloud = FilterClosePoints(globalPointCloud, 2.0f);
+
+    //    GameObject temp = Instantiate(poseNodePrefab, poseGraph.GetNodes()[0].GetPose().position, Quaternion.identity);
+
+    //    if (temp.TryGetComponent<VoxelRenderer>(out voxelRenderer))
+    //    {
+    //        voxelRenderer.SetVoxels(filteredCloud);
+    //    }
+
+
+    //    foreach (PoseNode node in poseGraph.GetNodes()) {
+    //        // spawn node GameObject based on its prefab
+    //        GameObject nodeObj = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
+
+
+    //        //// display point cloud for that node
+    //        if (nodeObj.TryGetComponent<VoxelRenderer>(out voxelRenderer))
+    //        {
+    //            voxelRenderer.SetVoxels(node.GetPointCloud());
+    //        }
+
+    //        // keep track of nodes so we can clear them later
+    //        poseNodesDisplayed.Add(nodeObj);
+
+    //        // spawn ground truth node GameObject based on the other prefab
+    //        GameObject nodeObjGT = Instantiate(poseNodeGroundTruthPrefab, node.GetPoseGroundTruth().position, Quaternion.identity);
+    //        poseNodesGroundTruthDisplayed.Add(nodeObjGT);
+    //    }
+    //}
 }

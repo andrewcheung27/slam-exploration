@@ -152,7 +152,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (interactAction.WasPressedThisFrame()) {
+        //if (interactAction.WasPressedThisFrame()) {
             // activate sensor to get point cloud
             List<Point> pointCloud = sensorController.Activate();
 
@@ -178,7 +178,7 @@ public class PlayerController : MonoBehaviour
             // bookkeeping
             nodeIndex++;
             timeSinceSensorActivated = 0f;
-        }
+        //}
     }
 
     public void setSensorEnabled(bool b)
