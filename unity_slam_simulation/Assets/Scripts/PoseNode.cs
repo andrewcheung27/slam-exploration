@@ -36,6 +36,11 @@ public class PoseNode
         return pose;
     }
 
+    public void SetPose(Pose p)
+    {
+        pose = p;
+    }
+
     public Pose GetPoseGroundTruth()
     {
         return poseGroundTruth;
