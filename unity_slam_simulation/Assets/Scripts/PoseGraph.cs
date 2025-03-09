@@ -72,25 +72,15 @@ public class PoseGraph
 
     public Matrix<float> ComputeError(PoseNode node1, PoseNode node2, Pose constraint)
     {
-        // TODO: this should be observed distance - difference between nodes in current graph (see 54:30)
         Vector3 nodeDiff = node2.GetPose().position - node1.GetPose().position;
-        Debug.Log("nodeDiff: " + nodeDiff);
         Vector3 error = constraint.position - nodeDiff;
-        Debug.Log("error in ComputeError: " + error);
         float[, ] arr = {{error.x}, {error.y}, {error.z}};  // 3x1
-        // float[, ] arr = {{error.x, error.y, error.z}};
         return Matrix<float>.Build.DenseOfArray(arr);
     }
 
     // simplified Jacobian blocks with pose = (x, z, theta) and theta = 0
-    // public Tuple<Matrix<float>, Matrix<float>> ComputeJacobianBlocks(Pose p)
     public Tuple<Matrix<float>, Matrix<float>> ComputeJacobianBlocks(PoseNode node1, PoseNode node2)
     {
-        // float[, ] arrA = {
-        //     {-1, 0, p.position.y}, 
-        //     {0, -1, -1 * p.position.x}, 
-        //     {0, 0, -1}
-        // };
         float[, ] arrA = {
             {-1, 0, node2.GetPose().position.y - node1.GetPose().position.y}, 
             {0, -1, node1.GetPose().position.x - node2.GetPose().position.x}, 
@@ -110,8 +100,7 @@ public class PoseGraph
     // mutates normalEquationMatrix and coefficientVector to build linear system
     public void BuildLinearSystem()
     {
-        // TODO: put information matrix somewhere else
-        // float[, ] omega = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        // information matrix
         float[, ] omega = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
         var infoMatrix = Matrix<float>.Build.DenseOfArray(omega);
         // normal equation matrix
@@ -119,33 +108,25 @@ public class PoseGraph
         // coefficient vector
         coefficientVector = Matrix<float>.Build.Sparse(nodes.Count * poseDimensions, 1);
 
-        // for each constraint:
         foreach (Tuple<PoseNode, PoseNode> nodePair in constraints.Keys) {
             // indices of the nodes
-            // TODO: explain multiply by 3
             int i = nodePair.Item1.GetIndex() * poseDimensions;
             int j = nodePair.Item2.GetIndex() * poseDimensions;
-            Debug.Log("i and j: " + i + " and " + j);
+
             // spatial constraint between the current pair of nodes
             Pose constraint = constraints[nodePair];
 
             // compute error
             Matrix<float> error = ComputeError(nodePair.Item1, nodePair.Item2, constraint);
-            Debug.Log("error: " + error);
 
             // compute blocks of Jacobian
-            // var (A, B) = ComputeJacobianBlocks(constraint);
             var (A, B) = ComputeJacobianBlocks(nodePair.Item1, nodePair.Item2);
-            Debug.Log("A: " + A);
-            Debug.Log("B: " + B);
 
             // update coefficient vector
-            Debug.Log("shit: " + A.Transpose() * infoMatrix * error);
             coefficientVector.SetSubMatrix(i, 0, A.Transpose() * infoMatrix * error);
             coefficientVector.SetSubMatrix(j, 0, B.Transpose() * infoMatrix * error);
 
             // update normal equation matrix
-            Debug.Log("fuck: " + A.Transpose() * infoMatrix * A);
             normalEquationMatrix.SetSubMatrix(i, i, A.Transpose() * infoMatrix * A);
             normalEquationMatrix.SetSubMatrix(i, j, A.Transpose() * infoMatrix * B);
             normalEquationMatrix.SetSubMatrix(j, i, B.Transpose() * infoMatrix * A);
@@ -153,63 +134,42 @@ public class PoseGraph
         }
     }
 
-    // TODO: implement pose graph optimization
     public void Optimize()
     {
-        Debug.Log("PoseGraph.Optimize() called");
-        // return;
-
-        // TODO: remove this
-        // start all nodes at 0
+        // start all nodes at fixed x and z coords, so we can simulate pose graph optimization.
+        // this is a workaround because we aren't simulating loop closing or landmarks.
         for (int i = 0; i < nodes.Count; i++) {
             nodes[i].SetPose(new Pose(new Vector3(i, nodes[i].GetPose().position.y, i), Vector3.zero));
         }
 
-        // x is the pose graph
-        // bool converged = false;
-
-        int maxIter = 1;
+        int maxIter = 1;  // doing more than 1 iteration seemed to make numbers get super big
         for (int iter = 0; iter < maxIter; iter++) {
             // build linear system
             BuildLinearSystem();
             var H = normalEquationMatrix;
             var b = coefficientVector;
-            Debug.Log("H = " + H);
-            Debug.Log("Det H: " + H.Determinant());
-            Debug.Log("b = " + b);
 
             // solve linear system
-            // Vector<float> deltaX = H.TransposeThisAndMultiply(H).Cholesky().Solve(H.TransposeThisAndMultiply(b));
-            // Matrix<float> deltaX = H.Cholesky().Solve(b);
-            Matrix<float> deltaX = H.Solve(b);
-            Debug.Log("DELTA X: " + deltaX);
+            Matrix<float> change = H.Solve(b);
 
-            // TODO: update node positions
-            // // x = x + deltaX
+            // update node positions
             for (int i = 0; i < nodes.Count; i++) {
+                // Debug.Log("old pose: " + nodes[i].GetPose());
                 Pose p = nodes[i].GetPose();
-                // var fuck = deltaX[i, 0];
-                var newX = deltaX[i * poseDimensions, 0];
-                if (!float.IsFinite(newX)) {
-                    Debug.Log("NEW X WAS BAD: " + newX);
-                    newX = 0f;
+
+                var changeX = change[i * poseDimensions, 0];
+                if (!float.IsFinite(changeX)) {
                     break;
                 }
-                Debug.Log("NEW X: " + newX);
-                // var y = (float) deltaX[i, 1];
-                var newZ = deltaX[i * poseDimensions + 1, 0];
-                if (!float.IsFinite(newZ)) {
-                    Debug.Log("NEW Z WAS BAD: " + newZ);
-                    newZ = 0f;
+
+                var changeZ = change[i * poseDimensions + 1, 0];
+                if (!float.IsFinite(changeZ)) {
                     break;
                 }
-                Debug.Log("NEW Z: " + newZ);
-                // p.SetPosition(p.position + new Vector3(x, y, z));
-                p.SetPosition(p.position + new Vector3(newX, 0, newZ));
-                // nodes[i].SetPose(p);
+
+                p.SetPosition(p.position + new Vector3(changeX, 0, changeZ));
+                // Debug.Log("new pose: " + nodes[i].GetPose());
             }
         }
-
-        // return x
     }
 }
