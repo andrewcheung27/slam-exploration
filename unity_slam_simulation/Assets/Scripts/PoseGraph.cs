@@ -12,7 +12,7 @@ public class PoseGraph
     private List<PoseNode> nodes;
     // maps pair of PoseNodes to a Pose, representing a spatial constraint between the nodes
     private Dictionary<Tuple<PoseNode, PoseNode>, Pose> constraints;
-    private int poseDimensions = 3;  // number of dimensions we're using for a Pose (3 dimensions of position, we aren't using rotation for simplicty)
+    private int poseDimensions = 3;  // number of dimensions we're using for a Pose (for simplicity, dimensions x, z, theta=0)
     private Matrix<float> normalEquationMatrix;  // H
     private Matrix<float> coefficientVector;  // b
 
@@ -74,18 +74,27 @@ public class PoseGraph
     {
         // TODO: this should be observed distance - difference between nodes in current graph (see 54:30)
         Vector3 nodeDiff = node2.GetPose().position - node1.GetPose().position;
+        Debug.Log("nodeDiff: " + nodeDiff);
         Vector3 error = constraint.position - nodeDiff;
-        // float[, ] arr = {{constraint.position.x}, {constraint.position.y}, {constraint.position.z}};  // 3x1
-        float[, ] arr = {{error.x, error.y, error.z}};
+        Debug.Log("error in ComputeError: " + error);
+        float[, ] arr = {{error.x}, {error.y}, {error.z}};  // 3x1
+        // float[, ] arr = {{error.x, error.y, error.z}};
         return Matrix<float>.Build.DenseOfArray(arr);
     }
 
-    public Tuple<Matrix<float>, Matrix<float>> ComputeJacobianBlocks(Pose p)
+    // simplified Jacobian blocks with pose = (x, z, theta) and theta = 0
+    // public Tuple<Matrix<float>, Matrix<float>> ComputeJacobianBlocks(Pose p)
+    public Tuple<Matrix<float>, Matrix<float>> ComputeJacobianBlocks(PoseNode node1, PoseNode node2)
     {
+        // float[, ] arrA = {
+        //     {-1, 0, p.position.y}, 
+        //     {0, -1, -1 * p.position.x}, 
+        //     {0, 0, -1}
+        // };
         float[, ] arrA = {
-            {-1, 0, p.position.y}, 
-            {0, -1, -1 * p.position.x}, 
-            {0, 0, p.position.z}
+            {-1, 0, node2.GetPose().position.y - node1.GetPose().position.y}, 
+            {0, -1, node1.GetPose().position.x - node2.GetPose().position.x}, 
+            {0, 0, -1}
         };
         var A = Matrix<float>.Build.DenseOfArray(arrA);
         float[, ] arrB = {
@@ -120,9 +129,13 @@ public class PoseGraph
 
             // compute error
             Matrix<float> error = ComputeError(nodePair.Item1, nodePair.Item2, constraint);
+            Debug.Log("error: " + error);
 
             // compute blocks of Jacobian
-            var (A, B) = ComputeJacobianBlocks(constraint);
+            // var (A, B) = ComputeJacobianBlocks(constraint);
+            var (A, B) = ComputeJacobianBlocks(nodePair.Item1, nodePair.Item2);
+            Debug.Log("A: " + A);
+            Debug.Log("B: " + B);
 
             // update coefficient vector
             coefficientVector.SetSubMatrix(i, 0, A.Transpose() * infoMatrix * error);
@@ -140,7 +153,7 @@ public class PoseGraph
     public void Optimize()
     {
         Debug.Log("PoseGraph.Optimize() called");
-        return;
+        // return;
 
         // x is the pose graph
         bool converged = false;
@@ -161,16 +174,26 @@ public class PoseGraph
 
             // TODO: update node positions
             // // x = x + deltaX
-            // for (int i = 0; i < nodes.Count; i++) {
-            //     Pose p = nodes[i].GetPose();
-            //     var fuck = deltaX[i, 0];
-            //     // var x = (float) deltaX[i, 0];
-            //     // var y = (float) deltaX[i, 1];
-            //     // var z = (float) deltaX[i, 2];
-            //     // p.SetPosition(p.position + new Vector3(x, y, z));
-            //     p.SetPosition(p.position + new Vector3(fuck, fuck, fuck));
-            //     // nodes[i].SetPose(p);
-            // }
+            for (int i = 0; i < nodes.Count; i++) {
+                Pose p = nodes[i].GetPose();
+                // var fuck = deltaX[i, 0];
+                var newX = deltaX[i * poseDimensions, 0];
+                if (float.IsNaN(newX)) {
+                    newX = 0f;
+                    converged = true;
+                }
+                Debug.Log("NEW X: " + newX);
+                // var y = (float) deltaX[i, 1];
+                var newZ = deltaX[i * poseDimensions + 1, 0];
+                if (float.IsNaN(newZ)) {
+                    newZ = 0f;
+                    converged = true;
+                }
+                Debug.Log("NEW Z: " + newZ);
+                // p.SetPosition(p.position + new Vector3(x, y, z));
+                p.SetPosition(p.position + new Vector3(newX, 0, newZ));
+                // nodes[i].SetPose(p);
+            }
 
             // TODO: converge if error is less than threshold
             converged = true;
