@@ -111,7 +111,8 @@ public class PoseGraph
     public void BuildLinearSystem()
     {
         // TODO: put information matrix somewhere else
-        float[, ] omega = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        // float[, ] omega = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+        float[, ] omega = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
         var infoMatrix = Matrix<float>.Build.DenseOfArray(omega);
         // normal equation matrix
         normalEquationMatrix = Matrix<float>.Build.Sparse(nodes.Count * poseDimensions, nodes.Count * poseDimensions);
@@ -124,6 +125,7 @@ public class PoseGraph
             // TODO: explain multiply by 3
             int i = nodePair.Item1.GetIndex() * poseDimensions;
             int j = nodePair.Item2.GetIndex() * poseDimensions;
+            Debug.Log("i and j: " + i + " and " + j);
             // spatial constraint between the current pair of nodes
             Pose constraint = constraints[nodePair];
 
@@ -138,10 +140,12 @@ public class PoseGraph
             Debug.Log("B: " + B);
 
             // update coefficient vector
+            Debug.Log("shit: " + A.Transpose() * infoMatrix * error);
             coefficientVector.SetSubMatrix(i, 0, A.Transpose() * infoMatrix * error);
             coefficientVector.SetSubMatrix(j, 0, B.Transpose() * infoMatrix * error);
 
             // update normal equation matrix
+            Debug.Log("fuck: " + A.Transpose() * infoMatrix * A);
             normalEquationMatrix.SetSubMatrix(i, i, A.Transpose() * infoMatrix * A);
             normalEquationMatrix.SetSubMatrix(i, j, A.Transpose() * infoMatrix * B);
             normalEquationMatrix.SetSubMatrix(j, i, B.Transpose() * infoMatrix * A);
@@ -155,15 +159,23 @@ public class PoseGraph
         Debug.Log("PoseGraph.Optimize() called");
         // return;
 
-        // x is the pose graph
-        bool converged = false;
+        // TODO: remove this
+        // start all nodes at 0
+        for (int i = 0; i < nodes.Count; i++) {
+            nodes[i].SetPose(new Pose(new Vector3(i, nodes[i].GetPose().position.y, i), Vector3.zero));
+        }
 
-        while (!converged) {
+        // x is the pose graph
+        // bool converged = false;
+
+        int maxIter = 1;
+        for (int iter = 0; iter < maxIter; iter++) {
             // build linear system
             BuildLinearSystem();
             var H = normalEquationMatrix;
             var b = coefficientVector;
             Debug.Log("H = " + H);
+            Debug.Log("Det H: " + H.Determinant());
             Debug.Log("b = " + b);
 
             // solve linear system
@@ -178,25 +190,24 @@ public class PoseGraph
                 Pose p = nodes[i].GetPose();
                 // var fuck = deltaX[i, 0];
                 var newX = deltaX[i * poseDimensions, 0];
-                if (float.IsNaN(newX)) {
+                if (!float.IsFinite(newX)) {
+                    Debug.Log("NEW X WAS BAD: " + newX);
                     newX = 0f;
-                    converged = true;
+                    break;
                 }
                 Debug.Log("NEW X: " + newX);
                 // var y = (float) deltaX[i, 1];
                 var newZ = deltaX[i * poseDimensions + 1, 0];
-                if (float.IsNaN(newZ)) {
+                if (!float.IsFinite(newZ)) {
+                    Debug.Log("NEW Z WAS BAD: " + newZ);
                     newZ = 0f;
-                    converged = true;
+                    break;
                 }
                 Debug.Log("NEW Z: " + newZ);
                 // p.SetPosition(p.position + new Vector3(x, y, z));
                 p.SetPosition(p.position + new Vector3(newX, 0, newZ));
                 // nodes[i].SetPose(p);
             }
-
-            // TODO: converge if error is less than threshold
-            converged = true;
         }
 
         // return x
