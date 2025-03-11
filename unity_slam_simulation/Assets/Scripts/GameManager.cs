@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI startText;
     public TextMeshProUGUI optimizingPoseGraphText;
     public TextMeshProUGUI metricsText;
+    public TextMeshProUGUI nodeExplanationText;
     public Button startButton;
     public Button restartStopButton;
     public GameObject poseNodePrefab;  // to display nodes on the pose graph
@@ -99,6 +100,11 @@ public class GameManager : MonoBehaviour
             metricsText.gameObject.SetActive(false);
         }
 
+        // node explanation UI
+        if (nodeExplanationText != null) {
+            nodeExplanationText.gameObject.SetActive(false);
+        }
+
         // enable sensor
         if (playerController != null) {
             playerController.setSensorEnabled(true);
@@ -145,6 +151,11 @@ public class GameManager : MonoBehaviour
 
         // hide message since pose graph optimization is done
         optimizingPoseGraphText.gameObject.SetActive(false);
+
+        // node explanation UI
+        if (nodeExplanationText != null) {
+            nodeExplanationText.gameObject.SetActive(true);
+        }
 
         // disable sensor
         if (playerController != null) {
@@ -220,6 +231,11 @@ public class GameManager : MonoBehaviour
         foreach (PoseNode node in poseGraph.GetNodes())
         {
             GameObject nodeObj = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
+
+            // label nodes with node number
+            TextMeshProUGUI nodeLabel = nodeObj.GetComponentInChildren<TextMeshProUGUI>();
+            nodeLabel.text = node.GetIndex().ToString();
+
             //if (nodeObj.TryGetComponent<VoxelRenderer>(out voxelRenderer))
             //{
             //    voxelRenderer.SetVoxels(node.GetPointCloud());
@@ -228,6 +244,10 @@ public class GameManager : MonoBehaviour
 
             GameObject nodeObjGT = Instantiate(poseNodeGroundTruthPrefab, node.GetPoseGroundTruth().position, Quaternion.identity);
             poseNodesGroundTruthDisplayed.Add(nodeObjGT);
+
+            // label GT nodes with node number
+            TextMeshProUGUI nodeLabelGT = nodeObjGT.GetComponentInChildren<TextMeshProUGUI>();
+            nodeLabelGT.text = node.GetIndex().ToString();
         }
     }
 

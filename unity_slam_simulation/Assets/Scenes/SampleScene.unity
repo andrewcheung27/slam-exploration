@@ -129,6 +129,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1646706875418633914, guid: c4df3a40a7ebd4adfbdcff33194b7562, type: 3}
   m_PrefabInstance: {fileID: 5679210278019619984}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &80924155 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7336219660577021202, guid: 7b862e23e76f44562ac63732a3d534f5, type: 3}
+  m_PrefabInstance: {fileID: 8526902736690234766}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &288540160 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3466678262806435842, guid: 7b862e23e76f44562ac63732a3d534f5, type: 3}
@@ -889,6 +900,10 @@ PrefabInstance:
       propertyPath: restartStopButton
       value: 
       objectReference: {fileID: 2003448174}
+    - target: {fileID: 8535989557777000626, guid: 4b2a138a14d6a43c6abe6a23110415e7, type: 3}
+      propertyPath: nodeExplanationText
+      value: 
+      objectReference: {fileID: 80924155}
     - target: {fileID: 8535989557777000626, guid: 4b2a138a14d6a43c6abe6a23110415e7, type: 3}
       propertyPath: optimizingPoseGraphText
       value: 
