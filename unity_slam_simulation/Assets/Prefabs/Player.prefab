@@ -176,11 +176,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sensor: {fileID: 610128287802045889}
-  moveSpeed: 500
-  rotateSpeed: 60
+  moveSpeed: 1000
+  rotateSpeed: 100
   sensorCooldown: 0.2
   sensorError: 2
   sensorEnabled: 0
+  sensorCanBeEnabled: 1
 --- !u!54 &2909121053202462198
 Rigidbody:
   m_ObjectHideFlags: 0

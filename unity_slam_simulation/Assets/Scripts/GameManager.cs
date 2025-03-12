@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI optimizingPoseGraphText;
     public TextMeshProUGUI metricsText;
     public TextMeshProUGUI nodeExplanationText;
+    public TextMeshProUGUI nodeCountText;
     public Button startButton;
     public Button restartStopButton;
     public GameObject poseNodePrefab;  // to display nodes on the pose graph
@@ -105,6 +106,13 @@ public class GameManager : MonoBehaviour
             nodeExplanationText.gameObject.SetActive(false);
         }
 
+        // node count UI
+        if (nodeCountText != null) {
+            SetNodesText(0);  // start with zero nodes
+            nodeCountText.gameObject.SetActive(false);
+            nodeCountText.gameObject.SetActive(true);
+        }
+
         // enable sensor
         if (playerController != null) {
             playerController.setSensorCanBeEnabled(true);
@@ -182,6 +190,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void SetNodesText(int n)
+    {
+        nodeCountText.text = "Nodes: " + n.ToString();
+    }
 
     List<Point> FilterClosePointsGrid(List<Point> points, float cellSize)
     {
@@ -208,6 +220,10 @@ public class GameManager : MonoBehaviour
 
     void EvaluateSLAM()
     {
+        if (poseGraph.GetNodes().Count == 0) {
+            return;
+        }
+
         VoxelRenderer voxelRenderer;
         List<Point> globalPointCloud = new List<Point>();
 

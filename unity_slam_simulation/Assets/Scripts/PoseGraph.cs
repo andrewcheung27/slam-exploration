@@ -43,6 +43,7 @@ public class PoseGraph
         } 
 
         nodes.Add(node);
+        GameManager.instance.SetNodesText(nodes.Count);
         if (debug) Debug.Log("Added node: " + node);
 
         if (lastNode != null) {
@@ -57,10 +58,14 @@ public class PoseGraph
         constraints.Add(new Tuple<PoseNode, PoseNode>(node1, node2), pose);
     }
 
-    // calculate RMSE of Absolute Trajectory Error as sum of the differences between each node's estimated position and its ground truth position.
+    // calculate RMSE of Absolute Trajectory Error with node position vs. ground truth position.
     // currently, this doesn't include rotation.
     public float CalculateAbsoluteTrajectoryErrorRMSE()
     {
+        if (nodes.Count == 0) {
+            return 0;
+        }
+
         float sum_error_squared = 0f;
 
         foreach (PoseNode node in nodes) {
