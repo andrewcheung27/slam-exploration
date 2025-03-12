@@ -107,7 +107,7 @@ public class GameManager : MonoBehaviour
 
         // enable sensor
         if (playerController != null) {
-            playerController.setSensorEnabled(true);
+            playerController.setSensorCanBeEnabled(true);
         }
 
         // clear pose graph from previous run
@@ -135,10 +135,10 @@ public class GameManager : MonoBehaviour
         poseGraph.Optimize();
 
         // calculate metrics
-        float absoluteTrajectoryError = poseGraph.CalculateAbsoluteTrajectoryError();
+        float absoluteTrajectoryErrorRMSE = poseGraph.CalculateAbsoluteTrajectoryErrorRMSE();
         if (metricsText != null) {
             metricsText.gameObject.SetActive(true);
-            metricsText.text = "Absolute Trajectory Error: " + absoluteTrajectoryError.ToString("0.###");
+            metricsText.text = "Absolute Trajectory Error RMSE: " + absoluteTrajectoryErrorRMSE.ToString("0.###");
         }
 
         // load scene to view the map
@@ -159,6 +159,7 @@ public class GameManager : MonoBehaviour
 
         // disable sensor
         if (playerController != null) {
+            playerController.setSensorCanBeEnabled(false);
             playerController.setSensorEnabled(false);
         }
 
@@ -250,44 +251,4 @@ public class GameManager : MonoBehaviour
             nodeLabelGT.text = node.GetIndex().ToString();
         }
     }
-
-    //void EvaluateSLAM()
-    //{
-    //    VoxelRenderer voxelRenderer;
-
-    //    foreach (PoseNode node in poseGraph.GetNodes())
-    //    {
-    //        GameObject nodeObj = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
-    //        globalPointCloud.AddRange(node.GetPointCloud());
-    //    }
-
-    //    List<Point> filteredCloud = FilterClosePoints(globalPointCloud, 2.0f);
-
-    //    GameObject temp = Instantiate(poseNodePrefab, poseGraph.GetNodes()[0].GetPose().position, Quaternion.identity);
-
-    //    if (temp.TryGetComponent<VoxelRenderer>(out voxelRenderer))
-    //    {
-    //        voxelRenderer.SetVoxels(filteredCloud);
-    //    }
-
-
-    //    foreach (PoseNode node in poseGraph.GetNodes()) {
-    //        // spawn node GameObject based on its prefab
-    //        GameObject nodeObj = Instantiate(poseNodePrefab, node.GetPose().position, Quaternion.identity);
-
-
-    //        //// display point cloud for that node
-    //        if (nodeObj.TryGetComponent<VoxelRenderer>(out voxelRenderer))
-    //        {
-    //            voxelRenderer.SetVoxels(node.GetPointCloud());
-    //        }
-
-    //        // keep track of nodes so we can clear them later
-    //        poseNodesDisplayed.Add(nodeObj);
-
-    //        // spawn ground truth node GameObject based on the other prefab
-    //        GameObject nodeObjGT = Instantiate(poseNodeGroundTruthPrefab, node.GetPoseGroundTruth().position, Quaternion.identity);
-    //        poseNodesGroundTruthDisplayed.Add(nodeObjGT);
-    //    }
-    //}
 }

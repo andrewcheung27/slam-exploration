@@ -180,7 +180,7 @@ MonoBehaviour:
   rotateSpeed: 60
   sensorCooldown: 0.2
   sensorError: 2
-  sensorEnabled: 1
+  sensorEnabled: 0
 --- !u!54 &2909121053202462198
 Rigidbody:
   m_ObjectHideFlags: 0

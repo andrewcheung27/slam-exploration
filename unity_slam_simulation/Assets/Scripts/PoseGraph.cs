@@ -57,17 +57,17 @@ public class PoseGraph
         constraints.Add(new Tuple<PoseNode, PoseNode>(node1, node2), pose);
     }
 
-    // calculate Absolute Trajectory Error as sum of the differences between each node's estimated position and its ground truth position.
+    // calculate RMSE of Absolute Trajectory Error as sum of the differences between each node's estimated position and its ground truth position.
     // currently, this doesn't include rotation.
-    public float CalculateAbsoluteTrajectoryError()
+    public float CalculateAbsoluteTrajectoryErrorRMSE()
     {
-        float error = 0f;
+        float sum_error_squared = 0f;
 
         foreach (PoseNode node in nodes) {
-            error += Mathf.Abs((node.GetPose().position - node.GetPoseGroundTruth().position).magnitude);
+            sum_error_squared += Mathf.Pow(Mathf.Abs((node.GetPose().position - node.GetPoseGroundTruth().position).magnitude), 2);
         }
 
-        return error;
+        return Mathf.Sqrt(sum_error_squared / nodes.Count);
     }
 
     public Matrix<float> ComputeError(PoseNode node1, PoseNode node2, Pose constraint)
