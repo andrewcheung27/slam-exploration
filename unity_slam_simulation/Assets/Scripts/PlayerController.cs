@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour
     public float sensorCooldown = 1f;  // how long before sensor can be activated again (in seconds)
     public float sensorError = 1f;
     public bool sensorEnabled = true;
+    public bool sensorCanBeEnabled = true;
 
     [Header ("Pose Graph")]
     private PoseGraph poseGraph;
@@ -56,6 +57,11 @@ public class PlayerController : MonoBehaviour
     {
         RotatePlayer();
         RisePlayer();
+
+        if (sensorCanBeEnabled && interactAction.WasPressedThisFrame()) {
+            sensorEnabled = !sensorEnabled;
+        }
+
         if (straightenAction.WasPressedThisFrame())
         {
             shouldStraighten = !shouldStraighten; 
@@ -67,7 +73,7 @@ public class PlayerController : MonoBehaviour
         }
 
         timeSinceSensorActivated += Time.deltaTime;
-        if (timeSinceSensorActivated > sensorCooldown) {
+        if (sensorEnabled && timeSinceSensorActivated > sensorCooldown) {
             ActivateSensor();
         }
     }
@@ -148,10 +154,6 @@ public class PlayerController : MonoBehaviour
     // in a real visual SLAM system, we would extract features from video frames and use their change between frames to estimate trajectory.
     // here, we just get a point cloud and add nodes to the pose graph with random error.
     {
-        if (!sensorEnabled) {
-            return;
-        }
-
         //if (interactAction.WasPressedThisFrame()) {
             // activate sensor to get point cloud
             List<Point> pointCloud = sensorController.Activate();
@@ -184,5 +186,10 @@ public class PlayerController : MonoBehaviour
     public void setSensorEnabled(bool b)
     {
         sensorEnabled = b;
+    }
+
+    public void setSensorCanBeEnabled(bool b)
+    {
+        sensorCanBeEnabled = b;
     }
 }

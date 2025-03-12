@@ -107,7 +107,7 @@ public class GameManager : MonoBehaviour
 
         // enable sensor
         if (playerController != null) {
-            playerController.setSensorEnabled(true);
+            playerController.setSensorCanBeEnabled(true);
         }
 
         // clear pose graph from previous run
@@ -159,6 +159,7 @@ public class GameManager : MonoBehaviour
 
         // disable sensor
         if (playerController != null) {
+            playerController.setSensorCanBeEnabled(false);
             playerController.setSensorEnabled(false);
         }
 
