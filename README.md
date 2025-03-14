@@ -3,6 +3,8 @@
 
 ## SLAM Simulator
 
+The SLAM Simulatior is available at: https://cheung2710.itch.io/slam-simulation.
+
 ### Instructions
 1. Click "Start Simulation".
 2. Use WASD to move around, Space to go up, and Shift to go down. Use J and L to turn left and right, and I and K to look up and down. Press P to stabilize. Press E to toggle the sensor, which will automatically add nodes to the pose graph.
